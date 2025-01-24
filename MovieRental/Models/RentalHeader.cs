@@ -16,7 +16,6 @@ namespace MovieRental.Models
         //Navigation
         [JsonIgnore]
         public Customer?  Customer { get; set; }
-        [JsonIgnore]
         public ICollection<RentalDetail>? RentalDetails { get; set; }
     }
 }

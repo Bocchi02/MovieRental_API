@@ -39,18 +39,43 @@ namespace MovieRental.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<RentalHeader>> AddEnrollment([FromBody] RentalHeader rentalHeader)
+        public async Task<ActionResult<RentalHeader>> PostRentalHeader([FromBody] RentalHeader rentalHeader)
         {
-            if (!ModelState.IsValid)
+            if (rentalHeader == null)
             {
-                return BadRequest(ModelState);
+                return BadRequest("RentalHeader data is required.");
+            }
+
+            if (rentalHeader.RentalDetails == null || !rentalHeader.RentalDetails.Any())
+            {
+                return BadRequest("At least one RentalDetail is required.");
+            }
+
+            var duplicateMovies = rentalHeader.RentalDetails
+                .GroupBy(rd => rd.MovieID)
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key)
+                .ToList();
+
+            if (duplicateMovies.Any())
+            {
+                return BadRequest($"Duplicate MovieIDs detected: {string.Join(", ", duplicateMovies)}");
             }
 
             DBcontext.RentalHeader.Add(rentalHeader);
             await DBcontext.SaveChangesAsync();
 
+            foreach (var rentalDetail in rentalHeader.RentalDetails)
+            {
+                rentalDetail.RentalID = rentalHeader.RentalID;
+                DBcontext.RentalDetail.Add(rentalDetail);
+            }
+
+            await DBcontext.SaveChangesAsync();
+
             return CreatedAtAction(nameof(GetRentalHeaderById), new { id = rentalHeader.RentalID }, rentalHeader);
         }
+
 
         [HttpPut("id={id}")]
         public async Task<IActionResult> UpdateRentalHeader(int id, [FromBody] RentalHeader rentalHeader)

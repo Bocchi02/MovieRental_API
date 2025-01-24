@@ -25,7 +25,7 @@ namespace MovieRental
 
             modelBuilder.Entity<Movie>()
                 .Property(rp => rp.RentalPrice)
-                .HasColumnType("deciimal(10,2)");
+                .HasColumnType("decimal(10,2)");
 
             modelBuilder.Entity<Customer>()
                 .Property(ln => ln.Lastname)
@@ -53,6 +53,10 @@ namespace MovieRental
                 .HasOne(rd => rd.Movie)
                 .WithMany(m => m.RentalDetails)
                 .HasForeignKey(rd => rd.MovieID);
+
+            modelBuilder.Entity<RentalDetail>()
+                .HasIndex(rd => new { rd.RentalID, rd.MovieID })
+                .IsUnique();
 
 
 
@@ -90,7 +94,7 @@ namespace MovieRental
             //    .HasOne(rd => rd.RentalHeader)
             //    .WithMany(rh => rh.RentalDetails)
             //    .HasForeignKey(rd => rd.RentalID);
-      
+
             //modelBuilder.Entity<RentalDetail>()
             //    .HasOne(rd => rd.Movie)
             //    .WithMany(m => m.RentalDetails)
